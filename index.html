@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Stock Prediction Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f9f9f9;
+            color: #333;
+        }
+        header {
+            text-align: center;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        #stockForm {
+            text-align: center;
+            margin: 20px;
+        }
+        #stockForm select, #stockForm button {
+            padding: 10px;
+            font-size: 1rem;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        #stockForm button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #stockForm button:hover {
+            background: #45a049;
+        }
+        #mainContent {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            max-width: 900px;
+        }
+        canvas {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        #statisticsBox {
+            margin-left: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 0.9rem;
+        }
+        #statisticsBox h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        #bottomStats {
+            text-align: center;
+            margin: 20px 0;
+        }
+        #bottomStats div {
+            margin: 10px 0;
+        }
+        .highlight {
+            color: white;
+            background-color: #ff5722;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .time-label {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .action-buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .action-buttons button {
+            margin: 5px;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .action-buttons button:hover {
+            background-color: #45a049;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="social-links">
+            <a href="https://twitter.com" target="_blank" class="social-icon twitter" title="Twitter">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="https://youtube.com" target="_blank" class="social-icon youtube" title="YouTube">
+              <i class="fa fa-youtube"></i>
+            </a>
+            <a href="https://instagram.com" target="_blank" class="social-icon instagram" title="Instagram">
+              <i class="fa fa-instagram"></i>
+            </a>
+            <a href="https://facebook.com" target="_blank" class="social-icon facebook" title="Facebook">
+              <i class="fa fa-facebook"></i>
+            </a>
+        </div>
+        <div class="language-selector">
+            <button class="dropdown-button" onclick="toggleDropdown()">
+                Select Language <span class="triangle">&#9660;</span>
+            </button>
+            <ul id="languageDropdown" class="dropdown-menu">
+                <li><a href="#">English</a></li>
+                <li><a href="#">Hindi</a></li>
+                <li><a href="#">Kannada</a></li>
+                <li><a href="#">Malayalam</a></li>
+                <li><a href="#">Tamil</a></li>
+            </ul>
+        </div>
+    </header>
+    <header>
+        <h1>AI-Powered Stock Prediction Tool</h1>
+    </header>
+
+    <div id="stockForm">
+        <select id="bankDropdown">
+            <option value="">Select Industry</option>
+            <option value="ITC">ITC</option>
+            <option value="Tata Steel">Tata Steel</option>
+            <option value="Reliance Industries">Reliance Industries</option>
+            <option value="Tata Motors">Tata Motors</option>
+            <option value="Tata Consultancy Services(tcs)">TCS</option>
+            <option value="Hindustan Unilever">Hindustan Unilever</option>
+            <option value="Larsen & Turbo">Larsen & Turbo </option>
+        </select>
+        <button onclick="updateGraph()">Analyze</button>
+    </div>
+
+    <div id="mainContent">
+        <canvas id="niftyChart"></canvas>
+        <div id="statisticsBox">
+            <h3>Market Statistics</h3>
+            <p><strong>Open:</strong> <span id="openPrice">Loading...</span></p>
+            <p><strong>Close:</strong> <span id="closePrice">Loading...</span></p>
+            <p><strong>Volume:</strong> <span id="volume">Loading...</span></p>
+            <p><strong>Market Cap:</strong> <span id="marketCap">Loading...</span></p>
+            <p><strong>52-Week High:</strong> <span id="high52Week">Loading...</span></p>
+            <p><strong>52-Week Low:</strong> <span id="low52Week">Loading...</span></p>
+        </div>
+    </div>
+
+    <div id="bottomStats">
+        <div><strong>Stocks Traded:</strong> 5M</div>
+        <div><strong>Advances:</strong> 1,600</div>
+        <div><strong>Declines:</strong> 1,200</div>
+        <div><strong>Unchanged:</strong> 200</div>
+    </div>
+
+    <div class="action-buttons">
+        <button id="exportDataButton">Export Data</button>
+        <button>Get Suggestions</button>
+    </div>
+
+    <div class="time-label">
+        <p>Trading Time: 09:00 AM - 04:00 PM</p>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+        const dropdown = document.getElementById('languageDropdown');
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Close the dropdown only when clicking outside of the dropdown or button
+    window.addEventListener('click', function (event) {
+        const dropdown = document.getElementById('languageDropdown');
+        const button = document.querySelector('.dropdown-button');
+        if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+        
+        let niftyChart;
+
+        // Generate mock Nifty data for a day
+        function generateNiftyData() {
+            const times = [];
+            const prices = [];
+            let currentTime = new Date("2024-12-13T09:00:00");
+
+            while (currentTime <= new Date("2024-12-13T16:00:00")) {
+                times.push(currentTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+                prices.push(18250 + Math.random() * 100 - 50); // Random prices around 18,250
+                currentTime.setMinutes(currentTime.getMinutes() + 30); // Increment every 30 minutes
+            }
+
+            return { times, prices };
+        }
+
+        // Initialize the chart
+        function initializeNiftyChart() {
+            const { times, prices } = generateNiftyData();
+            const ctx = document.getElementById('niftyChart').getContext('2d');
+
+            niftyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: times,
+                    datasets: [{
+                        label: 'Nifty Daily Performance',
+                        data: prices,
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        fill: true,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time of Day',
+                                font: { size: 14 }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Index Value',
+                                font: { size: 14 }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Update statistics based on generated data
+            updateStatistics(prices);
+        }
+
+        // Update statistics based on generated graph data
+        function updateStatistics(prices) {
+            const open = prices[0];
+            const close = prices[prices.length - 1];
+            const high = Math.max(...prices);
+            const low = Math.min(...prices);
+            const volume = (prices.length * 1000).toLocaleString();
+            const marketCap = "₹" + (Math.random() * 300).toFixed(0) + "T"; // Random market cap
+
+            document.getElementById('openPrice').textContent = open.toFixed(2);
+            document.getElementById('closePrice').textContent = close.toFixed(2);
+            document.getElementById('volume').textContent = volume;
+            document.getElementById('marketCap').textContent = marketCap;
+            document.getElementById('high52Week').textContent = high.toFixed(2);
+            document.getElementById('low52Week').textContent = low.toFixed(2);
+        }
+
+        // Load the chart on page load
+        initializeNiftyChart();
+
+        // Update the graph with new data when a new industry is selected
+        function updateGraph() {
+            const selectedBank = document.getElementById('bankDropdown').value;
+
+            if (!selectedBank) {
+                alert('Please select a bank.');
+                return;
+            }
+
+            const { times, prices } = generateNiftyData();
+
+            // Update the existing chart data and label
+            niftyChart.data.labels = times;
+            niftyChart.data.datasets[0].data = prices;
+            niftyChart.data.datasets[0].label = `${selectedBank} Performance`;
+            niftyChart.update(); // Refresh the chart
+
+            // Update statistics after graph refresh
+            updateStatistics(prices);
+        }
+
+        // Export chart data as CSV
+        function exportChartData() {
+            if (!niftyChart) {
+                alert('No chart data to export!');
+                return;
+            }
+
+            const labels = niftyChart.data.labels; // Time labels
+            const prices = niftyChart.data.datasets[0].data; // Price values
+
+            // Create CSV data
+            let csvContent = "Time,Price\n";
+            labels.forEach((label, index) => {
+                csvContent += `${label},${prices[index]}\n`;
+            });
+
+            // Create a Blob from the CSV data
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            // Create a temporary anchor element and trigger download
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `${niftyChart.data.datasets[0].label}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Attach event listener to the export button
+        document.getElementById('exportDataButton').addEventListener('click', exportChartData);
+    </script>
+</body>
+</html>
